@@ -11,3 +11,4 @@ Data cleaning tasks include:
 
 Feel free to add data after 9/23/2011, but understand that it is not required.
 Add any supplemental data you'd like in order to explore ideas related to earthquake occurrence and effects.
+hi 
