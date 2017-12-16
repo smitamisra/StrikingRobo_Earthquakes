@@ -1,11 +1,7 @@
 .ipynb_checkpoints/
 venv/
-<<<<<<< HEAD
-=======
 .idea/
-<<<<<<< HEAD
->>>>>>> 6ffba7c67bf70368f31bc9fb8cbe88df133d0507
-=======
 .__pycache__/
 __pycache__/
->>>>>>> a3cfc74c18fe2037a2c6995661dc6a72f212da44
+node_modules/
+
