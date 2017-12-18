@@ -49,6 +49,8 @@ Promise.all(promisesArray).then(
 
         legend.createLegend(combined_points);
 
+        $('.data-stat').mouseover(function() { console.log(this); });
+
     }, 
     reason => { console.log('reason', reason ); }
 );

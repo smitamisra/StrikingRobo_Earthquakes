@@ -33,7 +33,7 @@ function drawCountriesPath(countriesJson, path) {
                         'fill': 'pink'
                     });
 
-                $( '#stats-country-dynamic' ).text( d.properties.name ) ;
+                $( '#continent-country h2' ).text( d.properties.name ) ;
             })
             .on('mouseout', function(d) {
                 d3.select(this)
