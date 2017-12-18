@@ -2,11 +2,12 @@
 <html>
 <head>
     <title>Earthquakes 1900-2011</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">    
     <link rel="stylesheet" type="text/css" href="styles/main.css">
 
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>            
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>        
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js">
+    </script>
 </head>
 <body>    
     <div class="container">
@@ -40,20 +41,6 @@
                     </div>
                 </div>
 
-                <div class='my-legend'>
-                    <div class='legend-title'>The Title or Explanation of your Map</div>
-                    <div class='legend-scale'>
-                      <ul class='legend-labels'>
-                        <li><span style='background:#F1EEF6;'></span>0 - 20%</li>
-                        <li><span style='background:#BDC9E1;'></span>40%</li>
-                        <li><span style='background:#74A9CF;'></span>60%</li>
-                        <li><span style='background:#2B8CBE;'></span>80%</li>
-                        <li><span style='background:#045A8D;'></span>100%</li>
-                      </ul>
-                    </div>
-                    <div class='legend-source'>Source: <a href="#link to source">Name of source</a></div>
-                </div>
-
                 <div class='row'>
                     <div id='map-container container' class='col-md-12'>
                         <div id='map'></div>
@@ -72,27 +59,10 @@
                 </div>
             </div>
         </div>
-        <div class='row checkbox-filters'>
-            <div class="checkbox">
-                <label>
-                  <input class="filter_button" id="eruptions_button" name="eruptions" type="checkbox">
-                  Eruptions
-                </label>
-            </div>
-            <div class="checkbox">
-                <label>
-                  <input class="filter_button" id="tsunamis_button" name="tsunamis" type="checkbox">
-                  Tsunamis
-                </label>
-            </div>
-        </div>
     </div>
 
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   </body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript" src="dist/app.js"></script>
 </html>

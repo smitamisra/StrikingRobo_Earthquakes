@@ -4,9 +4,9 @@ import json
 class CaC(object):
     def __init__(self):
         self._files = [
-            {'file_path': 'd3_jsons/tsunamis.json', 'type': 'tsunami'},
-            {'file_path': 'd3_jsons/eruptions.json', 'type': 'eruption'},
-            {'file_path': 'd3_jsons/earthquakes_original.json', 'type': 'earthquake'}
+            {'file_path': 'd3_jsons/tsunamis.json', 'type': 'tsunamis'},
+            {'file_path': 'd3_jsons/eruptions.json', 'type': 'eruptions'},
+            {'file_path': 'd3_jsons/earthquakes_original.json', 'type': 'earthquakes'}
         ]
 
     def categorize_on_type(self):
@@ -18,7 +18,7 @@ class CaC(object):
                 for entry in file_data['data']:
                     entry['type'] = file['type']
 
-                data.extend(file_data['data'])
+                data.append(file_data['data'])
 
             f.close()
 

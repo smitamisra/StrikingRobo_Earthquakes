@@ -7,63 +7,63 @@ var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip;
 	
 
-function createCircles(jsonData, dType, dataConfig, projection) {
-    let configData = dataConfig[dType];
+function createCircles(jsonData, dataConfig, projection) {
 
-    console.log('dType', dType, configData);                
+    var circleContainers = g.selectAll('circle')
+        .data(jsonData);
 
-    var showDots = true;
-    if ( dType == 'tsunamis' || dType == 'eruptions') { 
-        $( configData.circlePath ).remove();
-        showDots = $( '#' + configData.name + '_button' ).prop( 'checked' ); 
-    }
+    circleContainers.enter().append('g')
+        .attr('class', 'circle');
 
-    if (showDots) {
-        g.selectAll(configData.circlePath)
-            .data(jsonData.data).enter()
-            .append('circle')
-            .attr({
-              cx: function(d) { 
-                  if (d.lng && d.lat) { return projection([d.lng, d.lat])[0]; }
-                  else { return projection(['0.0', '0.0'])[0]; }
-              },
-              cy: function(d) {
-                  if (d.lng == 'NaN'|| d.lat == 'NaN') { console.log(d); }
-                  if (d.lng && d.lat) { return projection([d.lng, d.lat])[1]; }
-                  else { return projection(['0.0', '0.0'])[1]; }
-              },
-              r: function(d) { 
-                  if (!d.lng && !d.lat && configData.color == 'green') { console.log('lat', d.lat, 'lng', d.lng); }
-                  return (d.lng && d.lat) ? '2': '0'; 
-              },
-              'class': function(d) { 
-                  var year;
-                  
-                  return configData.className + ' ' + d.t; }
-            })
-            .style({
-                'fill': configData.color,
-                'opacity': 0.6
-            })
-            .on('mouseover', function(d) {
-                if (configData.name == 'earthquakes') { createAppendTooltip(d, 'earthquakes'); }
-                else if (configData.name == 'tsunamis') { createAppendTooltip(d, 'tsunamis'); }
-                else if (configData.name == 'eruptions') { createAppendTooltip(d, 'eruptions'); }
+    circleContainers.selectAll('circle')
+        .data(function (d) { return d; })
+        .enter().append('circle')
+        .attr({
+          cx: function(d) { 
+              if (d.lng && d.lat) { return projection([d.lng, d.lat])[0]; }
+              else { return projection(['0.0', '0.0'])[0]; }
+          },
+          cy: function(d) {
+              if (d.lng == 'NaN'|| d.lat == 'NaN') { console.log(d); }
+              if (d.lng && d.lat) { return projection([d.lng, d.lat])[1]; }
+              else { return projection(['0.0', '0.0'])[1]; }
+          },
+          r: function(d) { 
+              if (!d.lng && !d.lat && dataConfig[d.type].configData.color == 'green') { console.log('lat', d.lat, 'lng', d.lng); }
+              return (d.lng && d.lat) ? '2': '0'; 
+          },
+          'class': function(d) { 
+              var year;
+              return dataConfig[d.type].className + ' ' + d.t; }
+        })
+        .style({
+            'fill': function(d) { return dataConfig[d.type].color; },
+            'opacity': 0.6
+        })
+        .attr("data-legend", function(d) { return d.type; })
+        .on('mouseover', function(d) {
+            if (d.type == 'earthquakes') { createAppendTooltip(d); }
+            else if (d.type == 'tsunamis') { createAppendTooltip(d); }
+            else if (d.type == 'eruptions') { createAppendTooltip(d); }
 
-            })
-            .on('mouseout', function(d) {
-                if (configData.name == 'earthquakes') { $( '#stats-earthquakes-dynamic ul' ).remove(); }
-                else if (configData.name == 'tsunamis') { $( '#stats-tsunamis-dynamic ul' ).remove(); }
-                else if (configData.name == 'eruptions') { $( '#stats-eruptions-dynamic ul' ).remove(); }                            
-            });
-    }
+        })
+        .on('mouseout', function(d) {
+            if (d.type == 'earthquakes') { 
+              $( '#stats-earthquakes-dynamic ul' ).remove(); 
+            } else if (d.type == 'tsunamis') { 
+              $( '#stats-tsunamis-dynamic ul' ).remove(); 
+            } else if (d.type == 'eruptions') { 
+              $( '#stats-eruptions-dynamic ul' ).remove(); 
+            }
+        });
+    
 }
 
 
 module.exports = {
   createCircles
 };
-},{"./setup.js":5}],2:[function(require,module,exports){
+},{"./setup.js":6}],2:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -71,6 +71,11 @@ let Setup = require("./setup.js");
 
 function drawCountriesPath(countriesJson, path) {
 	// Draw each province as a path
+
+    var countryTooltip = d3.select("body").append("div")   
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     Setup.g.selectAll('path')
         .data(countriesJson.features)
         .enter().append('path')
@@ -113,7 +118,7 @@ function drawCountriesPath(countriesJson, path) {
 module.exports = {
     drawCountriesPath
 };
-},{"./setup.js":5}],3:[function(require,module,exports){
+},{"./setup.js":6}],3:[function(require,module,exports){
 "use strict";
 
 
@@ -126,12 +131,61 @@ module.exports = {runEvents};
 },{}],4:[function(require,module,exports){
 "use strict";
 
+let Setup = require("./setup.js");
+
+var createLegend = function(data) {
+	var colorHash = {
+        0: ['earthquakes', 'green'],
+        1: ['eruptions', 'red'],
+        2: ['tsunamis', 'blue']
+    };
+
+    var legend = Setup.svg.append("g")
+        .attr("class", "legend")        
+        .attr("height", 100)
+        .attr("width", 100)
+        .attr('transform', 'translate(-875,15)');
+
+    legend.selectAll('rect')
+        .data(data).enter()
+        .append("rect")
+        .attr("x", Setup.width - 65)
+        .attr("y", function(d, i){ return i *  20;})
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", function(d) { 
+            	var color = colorHash[data.indexOf(d)][1];
+            	return color;
+        })
+        .on('click', function(d) {
+        		var color = colorHash[data.indexOf(d)][1];        		
+        	   	$( 'circle.' + color).toggle();
+        });
+
+    legend.selectAll('text')
+        .data(data).enter()
+        .append("text")
+        .attr("x", Setup.width - 52)
+        .attr("y", function(d, i){ return i *  20 + 9; })
+        .text(function(d) {
+            var text = colorHash[data.indexOf(d)][0];
+            return text;
+        });
+};
+
+module.exports = {
+    createLegend
+};
+},{"./setup.js":6}],5:[function(require,module,exports){
+"use strict";
+
 let Setup = require("./setup.js"),
     countries = require("./countries.js"),
     circles = require("./circles.js"),
     timeLapse = require("./time_lapse.js"),
     events = require("./events.js"),
-    zoom = require("./zoom.js");
+    zoom = require("./zoom.js"),
+    legend = require("./legend.js");
 
 var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip,
@@ -141,9 +195,7 @@ var g = Setup.g,
 var promisesArray = [
     Setup.importData('d3_jsons/times.json'), 
     Setup.importData('custom.geo.json'), 
-    Setup.importData('d3_jsons/tsunamis.json'), 
-    Setup.importData('d3_jsons/eruptions.json'), 
-    Setup.importData('d3_jsons/earthquakes_original.json')
+    Setup.importData('d3_jsons/combined_points.json')    
 ];
 
 Promise.all(promisesArray).then(
@@ -154,9 +206,9 @@ Promise.all(promisesArray).then(
 
         var timeJson = results[0], 
             countriesJson = results[1],
-            tsunamisJson = results[2],
-            eruptionsJson = results[3],
-            earthquakesJson = results[4];
+            combined_points = results[2];
+            // eruptionsJson = results[3],
+            // earthquakesJson = results[4];
 
         var newProjection = createProjection(countriesJson),
             projection = newProjection[0],
@@ -170,29 +222,16 @@ Promise.all(promisesArray).then(
             earthquakes: { name: 'earthquakes', color: 'green', circlePath: '.green.dot', className: 'green dot' }
         };
 
-        var circleData = [
-            [earthquakesJson, 'earthquakes'],
-            [eruptionsJson, 'eruptions'],
-            [tsunamisJson, 'tsunamis'],
-        ];
-
-        circleData.forEach((args) => { circles.createCircles(args[0], args[1], dataConfig, projection); });
-
-        function hideShowCircles(event) {            
-        	   var target = event.currentTarget;
-        	   
-            if ( target.name == 'eruptions' ) { circles.createCircles(eruptionsJson, 'eruptions', dataConfig, projection); }
-            else if ( target.name == 'tsunamis' ) { circles.createCircles(tsunamisJson, 'tsunamis', dataConfig, projection); }
-        }
-
-        d3.selectAll('.filter_button').on('click', hideShowCircles);
+        circles.createCircles(combined_points, dataConfig, projection);
 
         timeLapse.createTimeLapse(timeJson);
+
+        legend.createLegend(combined_points);
 
     }, 
     reason => { console.log('reason', reason ); }
 );
-},{"./circles.js":1,"./countries.js":2,"./events.js":3,"./setup.js":5,"./time_lapse.js":6,"./zoom.js":7}],5:[function(require,module,exports){
+},{"./circles.js":1,"./countries.js":2,"./events.js":3,"./legend.js":4,"./setup.js":6,"./time_lapse.js":7,"./zoom.js":8}],6:[function(require,module,exports){
 "use strict";
 
 console.log(d3);
@@ -263,9 +302,9 @@ var eruptionsStats = function(d) {
             </ul></div>`;
 };
 
-var createAppendTooltip = function(d, name) {
+var createAppendTooltip = function(d) {
     var $earthquakeStats = `<ul><li><strong>Time of event: ${d.day}/${d.month}/${d.year}</strong></li></ul>`;
-    var idName = '#stats-' + name + '-dynamic';
+    var idName = '#stats-' + d.type + '-dynamic';
 
     $( idName ).append( $earthquakeStats );
 };
@@ -285,7 +324,7 @@ module.exports = {
     createAppendTooltip
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -325,6 +364,7 @@ function createTimeLapse(timeJson) {
         
         $('circle').show();
         $('#row-title').empty();
+        $('#data-stats').empty();
         
         minTime = d3.min(timeJson);
         maxTime = d3.max(timeJson);
@@ -340,7 +380,7 @@ function createTimeLapse(timeJson) {
 module.exports = {
     createTimeLapse
 };
-},{"./setup.js":5}],7:[function(require,module,exports){
+},{"./setup.js":6}],8:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -383,4 +423,4 @@ var zoom = function() {
 module.exports = {
   zoom
 };
-},{"./setup.js":5}]},{},[4]);
+},{"./setup.js":6}]},{},[5]);

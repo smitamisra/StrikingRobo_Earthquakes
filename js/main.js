@@ -5,7 +5,8 @@ let Setup = require("./setup.js"),
     circles = require("./circles.js"),
     timeLapse = require("./time_lapse.js"),
     events = require("./events.js"),
-    zoom = require("./zoom.js");
+    zoom = require("./zoom.js"),
+    legend = require("./legend.js");
 
 var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip,
@@ -15,9 +16,7 @@ var g = Setup.g,
 var promisesArray = [
     Setup.importData('d3_jsons/times.json'), 
     Setup.importData('custom.geo.json'), 
-    Setup.importData('d3_jsons/tsunamis.json'), 
-    Setup.importData('d3_jsons/eruptions.json'), 
-    Setup.importData('d3_jsons/earthquakes_original.json')
+    Setup.importData('d3_jsons/combined_points.json')    
 ];
 
 Promise.all(promisesArray).then(
@@ -28,9 +27,9 @@ Promise.all(promisesArray).then(
 
         var timeJson = results[0], 
             countriesJson = results[1],
-            tsunamisJson = results[2],
-            eruptionsJson = results[3],
-            earthquakesJson = results[4];
+            combined_points = results[2];
+            // eruptionsJson = results[3],
+            // earthquakesJson = results[4];
 
         var newProjection = createProjection(countriesJson),
             projection = newProjection[0],
@@ -44,24 +43,11 @@ Promise.all(promisesArray).then(
             earthquakes: { name: 'earthquakes', color: 'green', circlePath: '.green.dot', className: 'green dot' }
         };
 
-        var circleData = [
-            [earthquakesJson, 'earthquakes'],
-            [eruptionsJson, 'eruptions'],
-            [tsunamisJson, 'tsunamis'],
-        ];
-
-        circleData.forEach((args) => { circles.createCircles(args[0], args[1], dataConfig, projection); });
-
-        function hideShowCircles(event) {            
-        	   var target = event.currentTarget;
-        	   
-            if ( target.name == 'eruptions' ) { circles.createCircles(eruptionsJson, 'eruptions', dataConfig, projection); }
-            else if ( target.name == 'tsunamis' ) { circles.createCircles(tsunamisJson, 'tsunamis', dataConfig, projection); }
-        }
-
-        d3.selectAll('.filter_button').on('click', hideShowCircles);
+        circles.createCircles(combined_points, dataConfig, projection);
 
         timeLapse.createTimeLapse(timeJson);
+
+        legend.createLegend(combined_points);
 
     }, 
     reason => { console.log('reason', reason ); }

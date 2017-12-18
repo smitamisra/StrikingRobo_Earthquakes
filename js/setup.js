@@ -68,9 +68,9 @@ var eruptionsStats = function(d) {
             </ul></div>`;
 };
 
-var createAppendTooltip = function(d, name) {
+var createAppendTooltip = function(d) {
     var $earthquakeStats = `<ul><li><strong>Time of event: ${d.day}/${d.month}/${d.year}</strong></li></ul>`;
-    var idName = '#stats-' + name + '-dynamic';
+    var idName = '#stats-' + d.type + '-dynamic';
 
     $( idName ).append( $earthquakeStats );
 };

@@ -6,56 +6,56 @@ var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip;
 	
 
-function createCircles(jsonData, dType, dataConfig, projection) {
-    let configData = dataConfig[dType];
+function createCircles(jsonData, dataConfig, projection) {
 
-    console.log('dType', dType, configData);                
+    var circleContainers = g.selectAll('circle')
+        .data(jsonData);
 
-    var showDots = true;
-    if ( dType == 'tsunamis' || dType == 'eruptions') { 
-        $( configData.circlePath ).remove();
-        showDots = $( '#' + configData.name + '_button' ).prop( 'checked' ); 
-    }
+    circleContainers.enter().append('g')
+        .attr('class', 'circle');
 
-    if (showDots) {
-        g.selectAll(configData.circlePath)
-            .data(jsonData.data).enter()
-            .append('circle')
-            .attr({
-              cx: function(d) { 
-                  if (d.lng && d.lat) { return projection([d.lng, d.lat])[0]; }
-                  else { return projection(['0.0', '0.0'])[0]; }
-              },
-              cy: function(d) {
-                  if (d.lng == 'NaN'|| d.lat == 'NaN') { console.log(d); }
-                  if (d.lng && d.lat) { return projection([d.lng, d.lat])[1]; }
-                  else { return projection(['0.0', '0.0'])[1]; }
-              },
-              r: function(d) { 
-                  if (!d.lng && !d.lat && configData.color == 'green') { console.log('lat', d.lat, 'lng', d.lng); }
-                  return (d.lng && d.lat) ? '2': '0'; 
-              },
-              'class': function(d) { 
-                  var year;
-                  
-                  return configData.className + ' ' + d.t; }
-            })
-            .style({
-                'fill': configData.color,
-                'opacity': 0.6
-            })
-            .on('mouseover', function(d) {
-                if (configData.name == 'earthquakes') { createAppendTooltip(d, 'earthquakes'); }
-                else if (configData.name == 'tsunamis') { createAppendTooltip(d, 'tsunamis'); }
-                else if (configData.name == 'eruptions') { createAppendTooltip(d, 'eruptions'); }
+    circleContainers.selectAll('circle')
+        .data(function (d) { return d; })
+        .enter().append('circle')
+        .attr({
+          cx: function(d) { 
+              if (d.lng && d.lat) { return projection([d.lng, d.lat])[0]; }
+              else { return projection(['0.0', '0.0'])[0]; }
+          },
+          cy: function(d) {
+              if (d.lng == 'NaN'|| d.lat == 'NaN') { console.log(d); }
+              if (d.lng && d.lat) { return projection([d.lng, d.lat])[1]; }
+              else { return projection(['0.0', '0.0'])[1]; }
+          },
+          r: function(d) { 
+              if (!d.lng && !d.lat && dataConfig[d.type].configData.color == 'green') { console.log('lat', d.lat, 'lng', d.lng); }
+              return (d.lng && d.lat) ? '2': '0'; 
+          },
+          'class': function(d) { 
+              var year;
+              return dataConfig[d.type].className + ' ' + d.t; }
+        })
+        .style({
+            'fill': function(d) { return dataConfig[d.type].color; },
+            'opacity': 0.6
+        })
+        .attr("data-legend", function(d) { return d.type; })
+        .on('mouseover', function(d) {
+            if (d.type == 'earthquakes') { createAppendTooltip(d); }
+            else if (d.type == 'tsunamis') { createAppendTooltip(d); }
+            else if (d.type == 'eruptions') { createAppendTooltip(d); }
 
-            })
-            .on('mouseout', function(d) {
-                if (configData.name == 'earthquakes') { $( '#stats-earthquakes-dynamic ul' ).remove(); }
-                else if (configData.name == 'tsunamis') { $( '#stats-tsunamis-dynamic ul' ).remove(); }
-                else if (configData.name == 'eruptions') { $( '#stats-eruptions-dynamic ul' ).remove(); }                            
-            });
-    }
+        })
+        .on('mouseout', function(d) {
+            if (d.type == 'earthquakes') { 
+              $( '#stats-earthquakes-dynamic ul' ).remove(); 
+            } else if (d.type == 'tsunamis') { 
+              $( '#stats-tsunamis-dynamic ul' ).remove(); 
+            } else if (d.type == 'eruptions') { 
+              $( '#stats-eruptions-dynamic ul' ).remove(); 
+            }
+        });
+    
 }
 
 
