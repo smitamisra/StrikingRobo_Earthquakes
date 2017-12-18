@@ -5,6 +5,11 @@ let Setup = require("./setup.js");
 
 function drawCountriesPath(countriesJson, path) {
 	// Draw each province as a path
+
+    var countryTooltip = d3.select("body").append("div")   
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     Setup.g.selectAll('path')
         .data(countriesJson.features)
         .enter().append('path')

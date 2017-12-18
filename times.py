@@ -77,6 +77,13 @@ class CreateTimeColumn(object):
         return file_data['data']
 
 
+class Something(CreateTimeColumn):
+    def __init__(self):
+        super(Something, self).__init__()
+
+        
+
+
 if __name__ == '__main__':
     time_column = CreateTimeColumn()
     time_column.convert_the_times()

@@ -37,6 +37,7 @@ function createTimeLapse(timeJson) {
         
         $('circle').show();
         $('#row-title').empty();
+        $('#data-stats').empty();
         
         minTime = d3.min(timeJson);
         maxTime = d3.max(timeJson);

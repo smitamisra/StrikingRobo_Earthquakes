@@ -2,21 +2,36 @@
 <html>
 <head>
     <title>Earthquakes 1900-2011</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">    
     <link rel="stylesheet" type="text/css" href="styles/main.css">
 
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>            
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>        
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js">
+    </script>
 </head>
-<body>
+<body>    
+    <div class="container">
 
+      <div class="starter-template">
+        <div class="row">
+            <div class="col-md-6">
+                <h1>Earthquakes 1900-2011</h1>        
+            </div>
+            <div class="col-md-6">
+                <blockquote>  
+                    <p><em>
+                        a sudden and violent shaking of the ground, sometimes causing great destruction, as a result of movements within the earth's crust or volcanic action.
+                    </em></p>
+                </blockquote>
+            </div>
+        </div>        
+      </div>
+    </div><!-- /.container -->
+    <hr style="margin-bottom: 0px;">
     <div class='container'>
         <div id='chart1' class='row'>            
             <div class='col-md-8'>
                 <div class='row'>
-                    <div class='col-md-6'>
-                        <h1 id='map-title' style="font-family: sans-serif; font-weight: lighter">Earthquakes 1900-2011</h1>
-                    </div>
                     <div class='col-md-4 col-md-offset-2'>
                         <div class="btn-group" role="group" aria-label="Time Lapse">
                             <button id='time-lapse-start' type="button" class="btn btn-secondary">Start</button>
@@ -25,6 +40,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class='row'>
                     <div id='map-container container' class='col-md-12'>
                         <div id='map'></div>
@@ -43,23 +59,10 @@
                 </div>
             </div>
         </div>
-        <div class='row checkbox-filters'>
-            <div class="checkbox">
-                <label>
-                  <input class="filter_button" id="eruptions_button" name="eruptions" type="checkbox">
-                  Eruptions
-                </label>
-            </div>
-            <div class="checkbox">
-                <label>
-                  <input class="filter_button" id="tsunamis_button" name="tsunamis" type="checkbox">
-                  Tsunamis
-                </label>
-            </div>
-        </div>
     </div>
-</body>
 
+  </body>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript" src="dist/app.js"></script>
 </html>
