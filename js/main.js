@@ -2,6 +2,7 @@
 
 let Setup = require("./setup.js"),
     countries = require("./countries.js"),
+    boundaries = require("./boundaries.js"),
     circles = require("./circles.js"),
     timeLapse = require("./time_lapse.js"),
     events = require("./events.js"),
@@ -16,7 +17,8 @@ var g = Setup.g,
 var promisesArray = [
     Setup.importData('d3_jsons/times.json'), 
     Setup.importData('custom.geo.json'), 
-    Setup.importData('d3_jsons/combined_points.json')    
+    Setup.importData('d3_jsons/combined_points.json'),
+    Setup.importData('MR_Data/PB2002_plates.json')
 ];
 
 Promise.all(promisesArray).then(
@@ -27,15 +29,20 @@ Promise.all(promisesArray).then(
 
         var timeJson = results[0], 
             countriesJson = results[1],
-            combined_points = results[2];
-            // eruptionsJson = results[3],
-            // earthquakesJson = results[4];
+            combined_points = results[2],
+            plates_json = results[3];
 
         var newProjection = createProjection(countriesJson),
             projection = newProjection[0],
             path = newProjection[1];
 
+        // var platesProjection = createProjection(plates_json),
+        //     pProjection = platesProjection[0],
+        //     pPath = pProjection[1];        
+
         countries.drawCountriesPath(countriesJson, path);
+
+        // boundaries.drawPlatesPath(plates_json, pPath);
 
         var dataConfig = {
             tsunamis: { name: 'tsunamis', color: 'blue', circlePath: '.blue.dot', className: 'blue dot' }, 

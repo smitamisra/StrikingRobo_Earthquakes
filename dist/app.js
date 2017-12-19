@@ -3,6 +3,36 @@
 
 let Setup = require("./setup.js");
 
+
+function drawPlatesPath(platesJson, path) {
+    // Draw each province as a path
+    console.log(platesJson);
+
+    var plates = platesJson.features;    
+
+    Setup.g.selectAll('path')
+        .data(plates)
+        .enter().append('path')
+            .attr({
+                'd': path,                
+                'class': 'boundary'
+            })
+            .attr("data-legend", function(d) { return d.properties.PlateName; })
+            .style({
+                'fill': 'pink',
+                'opacity': 0.4                
+            });            
+}
+
+
+module.exports = {
+    drawPlatesPath
+};
+},{"./setup.js":7}],2:[function(require,module,exports){
+"use strict";
+
+let Setup = require("./setup.js");
+
 var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip;
 	
@@ -65,7 +95,7 @@ function createCircles(jsonData, dataConfig, projection) {
 module.exports = {
   createCircles
 };
-},{"./setup.js":6}],2:[function(require,module,exports){
+},{"./setup.js":7}],3:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -198,7 +228,7 @@ function drawCountriesPath(countriesJson, path) {
 module.exports = {
     drawCountriesPath
 };
-},{"./setup.js":6}],3:[function(require,module,exports){
+},{"./setup.js":7}],4:[function(require,module,exports){
 "use strict";
 
 
@@ -209,7 +239,7 @@ function runEvents() {
 }
 
 module.exports = {runEvents};
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -261,11 +291,12 @@ var createLegend = function(data) {
 module.exports = {
     createLegend
 };
-},{"./setup.js":6}],5:[function(require,module,exports){
+},{"./setup.js":7}],6:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js"),
     countries = require("./countries.js"),
+    boundaries = require("./boundaries.js"),
     circles = require("./circles.js"),
     timeLapse = require("./time_lapse.js"),
     events = require("./events.js"),
@@ -280,7 +311,8 @@ var g = Setup.g,
 var promisesArray = [
     Setup.importData('d3_jsons/times.json'), 
     Setup.importData('custom.geo.json'), 
-    Setup.importData('d3_jsons/combined_points.json')    
+    Setup.importData('d3_jsons/combined_points.json'),
+    Setup.importData('MR_Data/PB2002_plates.json')
 ];
 
 Promise.all(promisesArray).then(
@@ -291,15 +323,20 @@ Promise.all(promisesArray).then(
 
         var timeJson = results[0], 
             countriesJson = results[1],
-            combined_points = results[2];
-            // eruptionsJson = results[3],
-            // earthquakesJson = results[4];
+            combined_points = results[2],
+            plates_json = results[3];
 
         var newProjection = createProjection(countriesJson),
             projection = newProjection[0],
             path = newProjection[1];
 
+        // var platesProjection = createProjection(plates_json),
+        //     pProjection = platesProjection[0],
+        //     pPath = pProjection[1];        
+
         countries.drawCountriesPath(countriesJson, path);
+
+        // boundaries.drawPlatesPath(plates_json, pPath);
 
         var dataConfig = {
             tsunamis: { name: 'tsunamis', color: 'blue', circlePath: '.blue.dot', className: 'blue dot' }, 
@@ -318,7 +355,7 @@ Promise.all(promisesArray).then(
     }, 
     reason => { console.log('reason', reason ); }
 );
-},{"./circles.js":1,"./countries.js":2,"./events.js":3,"./legend.js":4,"./setup.js":6,"./time_lapse.js":7,"./zoom.js":8}],6:[function(require,module,exports){
+},{"./boundaries.js":1,"./circles.js":2,"./countries.js":3,"./events.js":4,"./legend.js":5,"./setup.js":7,"./time_lapse.js":8,"./zoom.js":9}],7:[function(require,module,exports){
 "use strict";
 
 console.log(d3);
@@ -415,7 +452,7 @@ module.exports = {
     createAppendTooltip
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -480,7 +517,7 @@ function createTimeLapse(timeJson) {
 module.exports = {
     createTimeLapse
 };
-},{"./setup.js":6}],8:[function(require,module,exports){
+},{"./setup.js":7}],9:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -523,4 +560,4 @@ var zoom = function() {
 module.exports = {
   zoom
 };
-},{"./setup.js":6}]},{},[5]);
+},{"./setup.js":7}]},{},[6]);
