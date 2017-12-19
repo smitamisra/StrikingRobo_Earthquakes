@@ -65,7 +65,12 @@ if __name__ == '__main__':
 
         combined_points.extend(group)
 
-    points_dict = {index: Point(float(row['lat']), float(row['lng'])) for index, row in enumerate(combined_points)}
+    for index, feature in enumerate(combined_points):
+        feature['id'] = index
+
+    points_dict = {index: Point(float(row['lng']), float(row['lat'])) for index, row in enumerate(combined_points)}
+
+    print(len(points_dict) == len(combined_points))
 
     # tsunamis_gdf, eruptions_gdf, earthquakes_gdf = json_to_gdf(points_data[0]), json_to_gdf(points_data[1]), json_to_gdf(points_data[2])
 
@@ -77,6 +82,8 @@ if __name__ == '__main__':
         if not country_name:
             country_name = country.name
 
+        print('\n{}'.format(country_name))
+
         for pt_index, row in enumerate(combined_points):
             point = points_dict.get(pt_index)
 
@@ -86,7 +93,8 @@ if __name__ == '__main__':
                 intersects = country_poly.intersects(point)
 
                 if intersects:
-                    point_tracker[pt_index] = {'country_id': country.ID, 'country_name': country_name}
+                    row['country_id'] = country.ID
+                    row['country_name'] = country_name
 
                     column_name = column_names[row['type']]
 

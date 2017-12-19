@@ -33,7 +33,9 @@ function createCircles(jsonData, dataConfig, projection) {
           },
           'class': function(d) { 
               var year;
-              return dataConfig[d.type].className + ' ' + d.t; }
+              return dataConfig[d.type].className + ' ' + d.t + ' country-id-' + d.country_id; 
+          },
+          id: function(d) { return 'circle-' + d.id; }
         })
         .style({
             'fill': function(d) { return dataConfig[d.type].color; },
