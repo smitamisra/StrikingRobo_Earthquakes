@@ -132,36 +132,40 @@ function drawCountriesPath(countriesJson, path) {
                 return getColorOpacity(count, [minEarthquakes, maxEarthquakes]);  // give them an opacity value based on their current value
             })
             .on('mouseover', function(d) {
-                d3.select( this )
-                    .transition()
-                    .style({
-                        'stroke-opacity': 1,
-                        'stroke': '#f00',
-                        'fill': 'pink'
-                    });
+                if (!Setup.timer && !Setup.country) {
+                    d3.select( this )
+                        .transition()
+                        .style({
+                            'stroke-opacity': 1,
+                            'stroke': '#f00',
+                            'fill': 'pink'
+                        });
 
-                $( '#continent-country h2' ).text( d.properties.name ) ;
-                $( 'circle:not(.country-id-' + d.properties.ID + ')' ).hide();
+                    $( '#continent-country h2' ).text( d.properties.name ) ;
+                    $( 'circle:not(.country-id-' + d.properties.ID + ')' ).hide();
 
-                $( '.country-id-' + d.properties.ID ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
-
+                    $( '.country-id-' + d.properties.ID ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
+                }
             })
             .on('mouseout', function(d) {
-                var color = getColor(d);
+                if (!Setup.timer && !Setup.country) {
+                    var color = getColor(d);
+                    d3.select(this)
+                        .transition()
+                        .style({
+                            'stroke-opacity': 0.4,
+                            'stroke': '#D3D3D3',
+                            'fill': color
+                        });
 
-                d3.select(this)
-                    .transition()
-                    .style({
-                        'stroke-opacity': 0.4,
-                        'stroke': '#D3D3D3',
-                        'fill': color
-                    });
-
-                $('#stats-country-dynamic').text( ' ' );
-                $( 'circle' ).show();
+                    $('#stats-country-dynamic').text( ' ' );
+                    $( 'circle' ).show();
+                }                
             })
             .on('click', function(d) {
                 $( '#data-stats' ).empty();
+
+                Setup.country = !Setup.country;
 
                 $( '.country-id-' + d.properties.ID ).each(function(ind, val) {
                     var valType = val.__data__.type;
@@ -320,7 +324,9 @@ Promise.all(promisesArray).then(
 console.log(d3);
 
 var width = 950,
-    height = 400;
+    height = 400,
+    timer,
+    country = false;
 
 var svg = d3.select('#map').append('svg').attr({ width: 750, height: height });
 
@@ -397,6 +403,8 @@ var createAppendTooltip = function(d) {
 module.exports = {
     width,
     height,
+    timer,
+    country,
     svg,
     g,
     createProjection,
@@ -423,6 +431,8 @@ function createTimeLapse(timeJson) {
         if (currentTime == 0) { $('circle').hide(); }
         
         yearInterval = setInterval(function() {
+            Setup.timer = true;
+
             $('.' + currentTime).each(function() {
                 $( this ).show();
 
@@ -443,10 +453,14 @@ function createTimeLapse(timeJson) {
     function stopYearInterval() {         
         var interval = yearInterval; 
         clearInterval(interval); 
+
+        Setup.timer = false;
     }       
     
     function resetTimes() {        
         stopYearInterval();
+
+        Setup.timer = false;
         
         $('circle').show();
         $('#stats-year').empty();

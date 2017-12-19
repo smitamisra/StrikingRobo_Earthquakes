@@ -64,36 +64,40 @@ function drawCountriesPath(countriesJson, path) {
                 return getColorOpacity(count, [minEarthquakes, maxEarthquakes]);  // give them an opacity value based on their current value
             })
             .on('mouseover', function(d) {
-                d3.select( this )
-                    .transition()
-                    .style({
-                        'stroke-opacity': 1,
-                        'stroke': '#f00',
-                        'fill': 'pink'
-                    });
+                if (!Setup.timer && !Setup.country) {
+                    d3.select( this )
+                        .transition()
+                        .style({
+                            'stroke-opacity': 1,
+                            'stroke': '#f00',
+                            'fill': 'pink'
+                        });
 
-                $( '#continent-country h2' ).text( d.properties.name ) ;
-                $( 'circle:not(.country-id-' + d.properties.ID + ')' ).hide();
+                    $( '#continent-country h2' ).text( d.properties.name ) ;
+                    $( 'circle:not(.country-id-' + d.properties.ID + ')' ).hide();
 
-                $( '.country-id-' + d.properties.ID ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
-
+                    $( '.country-id-' + d.properties.ID ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
+                }
             })
             .on('mouseout', function(d) {
-                var color = getColor(d);
+                if (!Setup.timer && !Setup.country) {
+                    var color = getColor(d);
+                    d3.select(this)
+                        .transition()
+                        .style({
+                            'stroke-opacity': 0.4,
+                            'stroke': '#D3D3D3',
+                            'fill': color
+                        });
 
-                d3.select(this)
-                    .transition()
-                    .style({
-                        'stroke-opacity': 0.4,
-                        'stroke': '#D3D3D3',
-                        'fill': color
-                    });
-
-                $('#stats-country-dynamic').text( ' ' );
-                $( 'circle' ).show();
+                    $('#stats-country-dynamic').text( ' ' );
+                    $( 'circle' ).show();
+                }                
             })
             .on('click', function(d) {
                 $( '#data-stats' ).empty();
+
+                Setup.country = !Setup.country;
 
                 $( '.country-id-' + d.properties.ID ).each(function(ind, val) {
                     var valType = val.__data__.type;

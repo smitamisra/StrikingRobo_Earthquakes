@@ -13,6 +13,8 @@ function createTimeLapse(timeJson) {
         if (currentTime == 0) { $('circle').hide(); }
         
         yearInterval = setInterval(function() {
+            Setup.timer = true;
+
             $('.' + currentTime).each(function() {
                 $( this ).show();
 
@@ -33,10 +35,14 @@ function createTimeLapse(timeJson) {
     function stopYearInterval() {         
         var interval = yearInterval; 
         clearInterval(interval); 
+
+        Setup.timer = false;
     }       
     
     function resetTimes() {        
         stopYearInterval();
+
+        Setup.timer = false;
         
         $('circle').show();
         $('#stats-year').empty();

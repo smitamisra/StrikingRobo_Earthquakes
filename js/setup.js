@@ -3,7 +3,9 @@
 console.log(d3);
 
 var width = 950,
-    height = 400;
+    height = 400,
+    timer,
+    country = false;
 
 var svg = d3.select('#map').append('svg').attr({ width: 750, height: height });
 
@@ -80,6 +82,8 @@ var createAppendTooltip = function(d) {
 module.exports = {
     width,
     height,
+    timer,
+    country,
     svg,
     g,
     createProjection,
