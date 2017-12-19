@@ -44,6 +44,6 @@ blockquote {
   left: 0;
   font-size: 250px;
   text-align: center;
-  opacity: 0.5;
+  opacity: 0.1;
   pointer-events: none;
 }
