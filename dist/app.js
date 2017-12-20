@@ -3,6 +3,36 @@
 
 let Setup = require("./setup.js");
 
+
+function drawPlatesPath(platesJson, path) {
+    // Draw each province as a path
+    console.log(platesJson);
+
+    var plates = platesJson.features;    
+
+    Setup.g.selectAll('path')
+        .data(plates)
+        .enter().append('path')
+            .attr({
+                'd': path,                
+                'class': 'boundary'
+            })
+            .attr("data-legend", function(d) { return d.properties.PlateName; })
+            .style({
+                'fill': 'pink',
+                'opacity': 0.4                
+            });            
+}
+
+
+module.exports = {
+    drawPlatesPath
+};
+},{"./setup.js":7}],2:[function(require,module,exports){
+"use strict";
+
+let Setup = require("./setup.js");
+
 var g = Setup.g,
 	createAppendTooltip = Setup.createAppendTooltip;
 	
@@ -34,7 +64,9 @@ function createCircles(jsonData, dataConfig, projection) {
           },
           'class': function(d) { 
               var year;
-              return dataConfig[d.type].className + ' ' + d.t; }
+              return dataConfig[d.type].className + ' ' + d.t + ' country-id-' + d.country_id; 
+          },
+          id: function(d) { return 'circle-' + d.id; }
         })
         .style({
             'fill': function(d) { return dataConfig[d.type].color; },
@@ -63,14 +95,47 @@ function createCircles(jsonData, dataConfig, projection) {
 module.exports = {
   createCircles
 };
-},{"./setup.js":6}],2:[function(require,module,exports){
+},{"./setup.js":7}],3:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
 
 
+function getColorOpacity(valueIn, valuesIn) {
+  var color = d3.scale.linear() // create a linear scale
+    .domain([valuesIn[0], valuesIn[1]])  // input uses min and max values
+    .range([0.3, 1]);   // output for opacity between .3 and 1 %
+
+  return color(valueIn);  // return that number to the caller
+}
+
+
+function getColor(d) {
+    var quake_count = d.properties.earthquake_count;
+    if (quake_count !== 0) {
+        return '#2ca25f';
+    }
+    return '#666';
+}
+
+
 function drawCountriesPath(countriesJson, path) {
 	// Draw each province as a path
+
+    var countries = countriesJson.features;
+
+    var minEarthquakes = 1,
+        maxEarthquakes = d3.max(countries, function(c) { return c.properties.earthquake_count; }),
+
+        minEruptions = 1,
+        maxEruptions = d3.max(countries, function(c) { return c.properties.eruption_count; }),
+
+        minTsunamis = 1,
+        maxTsunamis = d3.max(countries, function(c) { return c.properties.tsunami_count; });    
+
+    console.log('minEarthquakes', minEarthquakes, 'maxEarthquakes', maxEarthquakes);
+    console.log('minEruptions', minEruptions, 'maxEruptions', maxEruptions);
+    console.log('minTsunamis', minTsunamis, 'maxTsunamis', maxTsunamis);
 
     var countryTooltip = d3.select("body").append("div")   
         .attr("class", "tooltip")
@@ -81,36 +146,81 @@ function drawCountriesPath(countriesJson, path) {
         .enter().append('path')
             .attr({
                 'd': path,
-                'id': function(d) {return d.properties.name;},
-                'class': function(d) { return ['continent', d.properties.continent]; }
+                'id': function(d) { return d.properties.ID; },
+                'class': function(d) { return 'continent ' + d.properties.continent + ' ' + d.properties.name ; }
             })
             .attr("data-legend", function(d) { return d.properties.continent; })
             .style({
-                'fill': '#666',
+                'fill': getColor,
+                'opacity': 0.4,
                 'stroke-opacity': 0.4,
                 'stroke': '#D3D3D3'
             })
-            .on('mouseover', function(d) {
-                d3.select( this )
-                    .transition()
-                    .style({
-                        'stroke-opacity': 1,
-                        'stroke': '#f00',
-                        'fill': 'pink'
-                    });
+            .attr('fill-opacity', function(d) {
+                var count = d.properties.earthquake_count;
 
-                $( '#stats-country-dynamic' ).text( d.properties.name ) ;
+                return getColorOpacity(count, [minEarthquakes, maxEarthquakes]);  // give them an opacity value based on their current value
+            })
+            .on('mouseover', function(d) {
+                if (!Setup.timer && !Setup.country) {
+                    d3.select( this )
+                        .transition()
+                        .style({
+                            'stroke-opacity': 1,
+                            'stroke': '#f00',
+                            'fill': 'pink'
+                        });
+
+                    $( '#continent-country h2' ).text( d.properties.name ) ;
+                    $( 'circle:not(.country-id-' + d.properties.ID + ')' ).hide();
+
+                    $( '.country-id-' + d.properties.ID ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
+                }
             })
             .on('mouseout', function(d) {
-                d3.select(this)
-                    .transition()
-                    .style({
-                        'stroke-opacity': 0.4,
-                        'stroke': '#D3D3D3',
-                        'fill': '#666'
-                    });
+                if (!Setup.timer && !Setup.country) {
+                    var color = getColor(d);
+                    d3.select(this)
+                        .transition()
+                        .style({
+                            'stroke-opacity': 0.4,
+                            'stroke': '#D3D3D3',
+                            'fill': color
+                        });
 
-                $('#stats-country-dynamic').text( ' ' );
+                    $('#stats-country-dynamic').text( ' ' );
+                    $( 'circle' ).show();
+                }                
+            })
+            .on('click', function(d) {
+                $( '#data-stats' ).empty();
+
+                Setup.country = !Setup.country;
+
+                $( '.country-id-' + d.properties.ID ).each(function(ind, val) {
+                    var valType = val.__data__.type;
+
+                    if (valType === 'eruptions') { $( '#data-stats' ).prepend( Setup.eruptionsStats( this.__data__, this.id ) ); }
+                    else if (valType === 'tsunamis') { $( '#data-stats' ).prepend( Setup.tsunamisStats( this.__data__, this.id ) ); }
+                    else if (valType === 'earthquakes') { $( '#data-stats' ).prepend( Setup.earthquakesStats( this.__data__, this.id ) ); }
+                    
+                });
+
+                $('.data-stat').on('mouseenter', function() {
+                    $(this).css('border-top', '1px solid black');
+                    $(this).css('border-bottom', '1px solid black');                    
+
+                    var circleId = '#' + this.id.slice( 5, this.id.length );
+                    
+                    $(circleId).animate({r: 6, stroke: 1});
+                });
+
+                $('.data-stat').on('mouseout', function() {
+                    $(this).css('border', 'none');
+
+                    var circleId = '#' + this.id.slice( 5, this.id.length );
+                    $(circleId).animate({r: 2, stroke: 0});
+                });
             });
 }
 
@@ -118,23 +228,24 @@ function drawCountriesPath(countriesJson, path) {
 module.exports = {
     drawCountriesPath
 };
-},{"./setup.js":6}],3:[function(require,module,exports){
+},{"./setup.js":7}],4:[function(require,module,exports){
 "use strict";
 
 
 function runEvents() {
 	$(".filter_button").prop('checked', true);
+
+	$('.data-stat').mouseover(function() { console.log(this); });
 }
 
-
 module.exports = {runEvents};
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
 
 var createLegend = function(data) {
-	var colorHash = {
+    var colorHash = {
         0: ['earthquakes', 'green'],
         1: ['eruptions', 'red'],
         2: ['tsunamis', 'blue']
@@ -145,6 +256,9 @@ var createLegend = function(data) {
         .attr("height", 100)
         .attr("width", 100)
         .attr('transform', 'translate(-875,15)');
+
+    legend.selectAll('div')
+        .data(data).enter();
 
     legend.selectAll('rect')
         .data(data).enter()
@@ -158,7 +272,8 @@ var createLegend = function(data) {
             	return color;
         })
         .on('click', function(d) {
-        		var color = colorHash[data.indexOf(d)][1];        		
+        		var color = colorHash[data.indexOf(d)][1];
+                   console.log(color);
         	   	$( 'circle.' + color).toggle();
         });
 
@@ -176,11 +291,12 @@ var createLegend = function(data) {
 module.exports = {
     createLegend
 };
-},{"./setup.js":6}],5:[function(require,module,exports){
+},{"./setup.js":7}],6:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js"),
     countries = require("./countries.js"),
+    boundaries = require("./boundaries.js"),
     circles = require("./circles.js"),
     timeLapse = require("./time_lapse.js"),
     events = require("./events.js"),
@@ -195,7 +311,8 @@ var g = Setup.g,
 var promisesArray = [
     Setup.importData('d3_jsons/times.json'), 
     Setup.importData('custom.geo.json'), 
-    Setup.importData('d3_jsons/combined_points.json')    
+    Setup.importData('d3_jsons/combined_points.json'),
+    Setup.importData('MR_Data/PB2002_plates.json')
 ];
 
 Promise.all(promisesArray).then(
@@ -206,15 +323,20 @@ Promise.all(promisesArray).then(
 
         var timeJson = results[0], 
             countriesJson = results[1],
-            combined_points = results[2];
-            // eruptionsJson = results[3],
-            // earthquakesJson = results[4];
+            combined_points = results[2],
+            plates_json = results[3];
 
         var newProjection = createProjection(countriesJson),
             projection = newProjection[0],
             path = newProjection[1];
 
+        // var platesProjection = createProjection(plates_json),
+        //     pProjection = platesProjection[0],
+        //     pPath = pProjection[1];        
+
         countries.drawCountriesPath(countriesJson, path);
+
+        // boundaries.drawPlatesPath(plates_json, pPath);
 
         var dataConfig = {
             tsunamis: { name: 'tsunamis', color: 'blue', circlePath: '.blue.dot', className: 'blue dot' }, 
@@ -228,18 +350,23 @@ Promise.all(promisesArray).then(
 
         legend.createLegend(combined_points);
 
+        $('.data-stat').mouseover(function() { console.log(this); });
+
     }, 
     reason => { console.log('reason', reason ); }
 );
-},{"./circles.js":1,"./countries.js":2,"./events.js":3,"./legend.js":4,"./setup.js":6,"./time_lapse.js":7,"./zoom.js":8}],6:[function(require,module,exports){
+},{"./boundaries.js":1,"./circles.js":2,"./countries.js":3,"./events.js":4,"./legend.js":5,"./setup.js":7,"./time_lapse.js":8,"./zoom.js":9}],7:[function(require,module,exports){
 "use strict";
 
 console.log(d3);
 
 var width = 950,
-    height = 400;
+    height = 400,
+    timer,
+    country = false;
 
-var svg = d3.select('#map').append('svg').attr({ width: 650, height: height });
+var svg = d3.select('#map').append('svg').attr({ width: 750, height: height });
+
 var g = svg.append('g');
 
 // Create a unit projection.
@@ -254,8 +381,8 @@ var createProjection = function(json) {
 
 	// Compute the bounds of a feature of interest, then derive scale & translate.
 	var b = path.bounds(json),
-	    s = 1.25 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height) * 1.2),
-	    t = [(width - s * (b[1][0] + b[0][0])) * 0.68 / 2, (height - s * (b[1][1] + b[0][1])) / 2];        
+	    s = 1.9 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height) * 1.8),
+	    t = [(width - s * (b[1][0] + b[0][0])) * 0.8 / 2, (height - s * (b[1][1] + b[0][1])) / 2];        
 
 	// Update the projection to use computed scale & translate.
 	projection.scale(s).translate(t);
@@ -271,12 +398,11 @@ var importData = function(filePath) {
         });
     });
 };
-    
-var yearStats = (year, month, day) => `<h1>${year} / ${month} / ${day}</h1>`;
 
-var tsunamisStats = function(d) {
-    return `<div class='row data-stat'>
+var tsunamisStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: lightblue;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Magnitude: ${d.Magnitude ? d.Magnitude : 'Unknown'}</li>
                 <li>Focal Depth: ${d.Focal_Depth ? d.Focal_Depth : 'Unknown'}</li>
                 <li>Max Water Height: ${d.Max_Water_Height ? d.Max_Water_Height : 'Unknown'}</li>
@@ -284,9 +410,10 @@ var tsunamisStats = function(d) {
             </ul></div>`;
 };
 
-var earthquakesStats = function(d) {
-    return `<div class='row data-stat'>
+var earthquakesStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: lightgreen;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Depth (km): ${d.Depth_km ? d.Depth_km : 'Unknown'}</li>
                 <li>Magnitude: ${d.Mag ? d.Mag : 'Unknown'}</li>
                 <li>Max Deaths: ${d.Max_Deaths ? d.Max_Deaths : 'Unknown'}</li>
@@ -294,9 +421,10 @@ var earthquakesStats = function(d) {
             </ul></div>`;
 };
 
-var eruptionsStats = function(d) {
-    return `<div class='row data-stat'>
+var eruptionsStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: pink;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Explosivity Index Max: ${d.ExplosivityIndexMax ? d.ExplosivityIndexMax : 'Unknown'}</li>
                 <li>Continuing: ${d.Continuing ? d.Continuing : 'Unknown'}</li>
             </ul></div>`;
@@ -309,22 +437,22 @@ var createAppendTooltip = function(d) {
     $( idName ).append( $earthquakeStats );
 };
 
-
 module.exports = {
     width,
     height,
+    timer,
+    country,
     svg,
     g,
     createProjection,
     importData,
-    yearStats,
     tsunamisStats,
     earthquakesStats,
     eruptionsStats,
     createAppendTooltip
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -340,15 +468,20 @@ function createTimeLapse(timeJson) {
         if (currentTime == 0) { $('circle').hide(); }
         
         yearInterval = setInterval(function() {
+            Setup.timer = true;
+
             $('.' + currentTime).each(function() {
                 $( this ).show();
 
                 $( this ).fadeIn(200).animate({r: 6, stroke: 1}).animate({r: 2, stroke: 1});
 
-                $('#row-title').html( Setup.yearStats(this.__data__.Year, this.__data__.Month, this.__data__.Day) );
-                if (this.classList.contains("red")) { $( '#data-stats' ).prepend( Setup.eruptionsStats( this.__data__ ) ); }
-                else if (this.classList.contains("blue")) { $( '#data-stats' ).prepend( Setup.tsunamisStats( this.__data__ ) ); }
-                else if (this.classList.contains("green")) { $( '#data-stats' ).prepend( Setup.earthquakesStats( this.__data__ ) ); }
+                var current_year = $('#stats-year').html();
+                if (current_year != this.__data__.Year && current_year < this.__data__.Year) {
+                    $('#stats-year').html(this.__data__.Year);
+                }                
+                if (this.classList.contains("red")) { $( '#data-stats' ).prepend( Setup.eruptionsStats( this.__data__, this.classList[2] ) ); }
+                else if (this.classList.contains("blue")) { $( '#data-stats' ).prepend( Setup.tsunamisStats( this.__data__, this.classList[2] ) ); }
+                else if (this.classList.contains("green")) { $( '#data-stats' ).prepend( Setup.earthquakesStats( this.__data__, this.classList[2] ) ); }
             });
             currentTime++;            
         }, 25);
@@ -357,13 +490,17 @@ function createTimeLapse(timeJson) {
     function stopYearInterval() {         
         var interval = yearInterval; 
         clearInterval(interval); 
+
+        Setup.timer = false;
     }       
     
     function resetTimes() {        
         stopYearInterval();
+
+        Setup.timer = false;
         
         $('circle').show();
-        $('#row-title').empty();
+        $('#stats-year').empty();
         $('#data-stats').empty();
         
         minTime = d3.min(timeJson);
@@ -380,7 +517,7 @@ function createTimeLapse(timeJson) {
 module.exports = {
     createTimeLapse
 };
-},{"./setup.js":6}],8:[function(require,module,exports){
+},{"./setup.js":7}],9:[function(require,module,exports){
 "use strict";
 
 let Setup = require("./setup.js");
@@ -423,4 +560,4 @@ var zoom = function() {
 module.exports = {
   zoom
 };
-},{"./setup.js":6}]},{},[5]);
+},{"./setup.js":7}]},{},[6]);

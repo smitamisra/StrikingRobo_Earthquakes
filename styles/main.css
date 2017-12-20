@@ -24,29 +24,26 @@ blockquote {
 	font-size: 16px;
 }
 
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
+#map {
+  position: relative;
+  width: 100%;
 }
 
-.x.axis path {
-  display: none;
+#continent-country, #stats-year {
+  position: absolute;
+  text-align: right;
+  padding-right: 35px;
+  top: 0; 
+  left: 480px; 
+  width: 300px; 
 }
 
-.line {
-  fill: none;
-  stroke: steelblue;
-  stroke-width: 1.5px;
-}
-
-.legend rect {
-  fill:white;
-  stroke:black;
-  opacity:0.8;}
-
-#ex1Slider .slider-selection {
-  background: #BABABA;
+#stats-year {
+  height: 100%;
+  width: 100%; 
+  left: 0;
+  font-size: 250px;
+  text-align: center;
+  opacity: 0.1;
+  pointer-events: none;
 }

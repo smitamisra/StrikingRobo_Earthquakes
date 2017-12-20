@@ -3,7 +3,7 @@
 let Setup = require("./setup.js");
 
 var createLegend = function(data) {
-	var colorHash = {
+    var colorHash = {
         0: ['earthquakes', 'green'],
         1: ['eruptions', 'red'],
         2: ['tsunamis', 'blue']
@@ -14,6 +14,9 @@ var createLegend = function(data) {
         .attr("height", 100)
         .attr("width", 100)
         .attr('transform', 'translate(-875,15)');
+
+    legend.selectAll('div')
+        .data(data).enter();
 
     legend.selectAll('rect')
         .data(data).enter()
@@ -27,7 +30,8 @@ var createLegend = function(data) {
             	return color;
         })
         .on('click', function(d) {
-        		var color = colorHash[data.indexOf(d)][1];        		
+        		var color = colorHash[data.indexOf(d)][1];
+                   console.log(color);
         	   	$( 'circle.' + color).toggle();
         });
 

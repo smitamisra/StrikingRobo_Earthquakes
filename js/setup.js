@@ -3,9 +3,12 @@
 console.log(d3);
 
 var width = 950,
-    height = 400;
+    height = 400,
+    timer,
+    country = false;
 
-var svg = d3.select('#map').append('svg').attr({ width: 650, height: height });
+var svg = d3.select('#map').append('svg').attr({ width: 750, height: height });
+
 var g = svg.append('g');
 
 // Create a unit projection.
@@ -20,8 +23,8 @@ var createProjection = function(json) {
 
 	// Compute the bounds of a feature of interest, then derive scale & translate.
 	var b = path.bounds(json),
-	    s = 1.25 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height) * 1.2),
-	    t = [(width - s * (b[1][0] + b[0][0])) * 0.68 / 2, (height - s * (b[1][1] + b[0][1])) / 2];        
+	    s = 1.9 / Math.max((b[1][0] - b[0][0]) / width, ((b[1][1] - b[0][1]) / height) * 1.8),
+	    t = [(width - s * (b[1][0] + b[0][0])) * 0.8 / 2, (height - s * (b[1][1] + b[0][1])) / 2];        
 
 	// Update the projection to use computed scale & translate.
 	projection.scale(s).translate(t);
@@ -37,12 +40,11 @@ var importData = function(filePath) {
         });
     });
 };
-    
-var yearStats = (year, month, day) => `<h1>${year} / ${month} / ${day}</h1>`;
 
-var tsunamisStats = function(d) {
-    return `<div class='row data-stat'>
+var tsunamisStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: lightblue;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Magnitude: ${d.Magnitude ? d.Magnitude : 'Unknown'}</li>
                 <li>Focal Depth: ${d.Focal_Depth ? d.Focal_Depth : 'Unknown'}</li>
                 <li>Max Water Height: ${d.Max_Water_Height ? d.Max_Water_Height : 'Unknown'}</li>
@@ -50,9 +52,10 @@ var tsunamisStats = function(d) {
             </ul></div>`;
 };
 
-var earthquakesStats = function(d) {
-    return `<div class='row data-stat'>
+var earthquakesStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: lightgreen;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Depth (km): ${d.Depth_km ? d.Depth_km : 'Unknown'}</li>
                 <li>Magnitude: ${d.Mag ? d.Mag : 'Unknown'}</li>
                 <li>Max Deaths: ${d.Max_Deaths ? d.Max_Deaths : 'Unknown'}</li>
@@ -60,9 +63,10 @@ var earthquakesStats = function(d) {
             </ul></div>`;
 };
 
-var eruptionsStats = function(d) {
-    return `<div class='row data-stat'>
+var eruptionsStats = function(d, id) {
+    return `<div class='row data-stat' id='stat-${id}'>
             <ul style='background-color: pink;'>
+                <li>Date: ${d.Month} / ${d.Day} / ${d.Year}</li>
                 <li>Explosivity Index Max: ${d.ExplosivityIndexMax ? d.ExplosivityIndexMax : 'Unknown'}</li>
                 <li>Continuing: ${d.Continuing ? d.Continuing : 'Unknown'}</li>
             </ul></div>`;
@@ -75,15 +79,15 @@ var createAppendTooltip = function(d) {
     $( idName ).append( $earthquakeStats );
 };
 
-
 module.exports = {
     width,
     height,
+    timer,
+    country,
     svg,
     g,
     createProjection,
     importData,
-    yearStats,
     tsunamisStats,
     earthquakesStats,
     eruptionsStats,
